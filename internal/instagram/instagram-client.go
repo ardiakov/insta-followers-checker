@@ -7,20 +7,24 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type Instagram struct {
 	Endpoint          string
 	followersEndpoint string
-	FollowersPageSize int
+	followingEndpoint string
+	FollowersPageSize string
+	FollowingPageSize string
 }
 
 func InitClient() *Instagram {
 	return &Instagram{
 		Endpoint:          "https://i.instagram.com/api/v1/",
 		followersEndpoint: "friendships/434045099/followers/",
-		FollowersPageSize: 20,
+		followingEndpoint: "friendships/434045099/following/",
+		FollowersPageSize: "200",
 	}
 }
 
@@ -35,16 +39,74 @@ type FollowersResponse struct {
 	Status    string `json:"status"`
 }
 
+type FollowingResponse struct {
+	Users []struct {
+		Pk       int    `json:"pk"`
+		Username string `json:"username"`
+		Fullname string `json:"fullname"`
+	} `json:"users"`
+	PageSize  int    `json:"page_size"`
+	NextMaxId string `json:"next_max_id"`
+	Status    string `json:"status"`
+}
+
 func (r *Instagram) GetFollowers() {
-	maxId := "QVFCS1VvYURINnlwQm5WQnBrTm1TT3Z5WWZqY0tnNzlLVTQzY2JERkhNVThqaU1oa2lKcU1aQ3AxOXpBb3ZxbER2aHJZWmhwZFI5d2dTV0x1R3ZEdDNIMQ%3D%3D"
+	counter := 0
+	maxId := ""
+
+	for {
+		parm := url.Values{}
+		parm.Add("count", r.FollowersPageSize)
+
+		if maxId != "" {
+			parm.Add("max_id", maxId)
+		}
+
+		req, err := http.NewRequest("GET", r.Endpoint+r.followersEndpoint+"?", nil)
+		req.Header.Set("cookie", os.Getenv("COOKIE"))
+		req.Header.Set("x-ig-app-id", os.Getenv("APP_ID"))
+
+		req.URL.RawQuery = parm.Encode()
+
+		if err != nil {
+			panic(err)
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+
+		defer resp.Body.Close()
+
+		bytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			panic(err)
+		}
+
+		data := FollowersResponse{}
+
+		_ = json.Unmarshal(bytes, &data)
+
+		for _, user := range data.Users {
+			counter++
+			fmt.Println(strconv.Itoa(counter) + " " + user.Username)
+		}
+
+		maxId = data.NextMaxId
+
+		if maxId == "" {
+			return
+		}
+	}
+}
+func (r *Instagram) GetFollowing() {
+	maxId := ""
 
 	parm := url.Values{}
-	parm.Add("count", string(r.FollowersPageSize))
+	parm.Add("count", string(r.FollowingPageSize))
 	parm.Add("max_id", maxId)
 
 	fmt.Println(parm.Encode())
 
-	req, err := http.NewRequest("GET", r.Endpoint+r.followersEndpoint+"?", strings.NewReader(parm.Encode()))
+	req, err := http.NewRequest("GET", r.Endpoint+r.followingEndpoint+"?", strings.NewReader(parm.Encode()))
 	req.Header.Set("cookie", os.Getenv("COOKIE"))
 	req.Header.Set("x-ig-app-id", os.Getenv("APP_ID"))
 
@@ -64,7 +126,7 @@ func (r *Instagram) GetFollowers() {
 		panic(err)
 	}
 
-	data := FollowersResponse{}
+	data := FollowingResponse{}
 
 	_ = json.Unmarshal(bytes, &data)
 
