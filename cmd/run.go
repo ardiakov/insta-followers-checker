@@ -2,12 +2,18 @@ package main
 
 import (
 	"fmt"
-	"insta-follower-notifier/internal/instagram"
+	"insta-follower-notifier/internal/app"
 )
 
 func main() {
-	fmt.Println("test")
+	fmt.Println("Run")
 
-	ints := instagram.InitClient()
-	ints.GetFollowers()
+	config := app.InitConfig()
+	context := app.InitContext(config)
+
+	users := context.InstagramClient.GetFollowers()
+
+	for _, user := range users {
+		println(user)
+	}
 }
