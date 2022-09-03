@@ -21,7 +21,10 @@ func InitContext(config Config) *Context {
 			config.InstagramCookies,
 			config.InstagramAppId,
 		),
-		MongoDbClient: mongodb.InitClient(),
+		MongoDbClient: mongodb.InitClient(
+			config.MongoDbDsn,
+			config.MongoDbName,
+		),
 	}
 
 	return context
