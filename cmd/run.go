@@ -11,11 +11,12 @@ func main() {
 	config := app.InitConfig()
 	context := app.InitContext(config)
 
-	users := context.InstagramClient.GetFollowers()
-	context.MongoDbClient.Update("followers", "followers", users)
+	//followers := context.InstagramClient.GetFollowers()
+	//context.MongoDbClient.Update("followers", "followers", followers)
+	//
+	//followings := context.InstagramClient.GetFollowings()
+	//context.MongoDbClient.Update("followers", "followings", followings)
 
-	/*
-		for _, user := range users {
-			println(user)
-		}*/
+	context.MongoDbClient.GetDiff("followers", "followings")
+
 }
