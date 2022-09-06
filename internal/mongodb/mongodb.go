@@ -70,29 +70,41 @@ func (r *MongoDbClient) Update(collection string, fieldName string, data []strin
 	//fmt.Println(result2.DecodeBytes())
 }
 
-func (r *MongoDbClient) GetDiff(field1 string, field2 string) {
+func (r *MongoDbClient) GetDiff(field1 string, field2 string) bson.RawValue {
 	ctx := context.Background()
 
 	id, _ := primitive.ObjectIDFromHex("630f581c4b2204c4e04f523b")
 
-	pipeline := bson.M{
-		"$projectId": bson.M{
-			"_id": id,
-			"c": bson.M{
-				"$setDifference": bson.A{"followers", "followings"},
+	match := bson.A{
+		bson.M{
+			"$match": bson.M{
+				"$expr": bson.M{
+					"$eq": bson.A{"$_id", id},
+				},
+			},
+		},
+		bson.M{
+			"$project": bson.M{
+				"result": bson.M{
+					"$setDifference": bson.A{
+						"$followings", "$followers",
+					},
+				},
 			},
 		},
 	}
 
-	//match := bson.M{{"$project", bson.D{{"_id", id}}}}
-
-	//[{ "$project": {"_id": "630f581c4b2204c4e04f523b",  "c": { "$setDifference": [ "$data",[1,2,5] ] } } }]
-
-	cur, err := r.Client.Database("insta").Aggregate(ctx, mongo.Pipeline{pipeline})
+	cur, err := r.Client.Database("insta").Collection("followers").Aggregate(ctx, match)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(cur)
+	var data []bson.Raw
+
+	if err = cur.All(context.Background(), &data); err != nil {
+		panic(err)
+	}
+
+	return data[0].Lookup("result")
 }

@@ -17,6 +17,8 @@ func main() {
 	//followings := context.InstagramClient.GetFollowings()
 	//context.MongoDbClient.Update("followers", "followings", followings)
 
-	context.MongoDbClient.GetDiff("followers", "followings")
+	diff := context.MongoDbClient.GetDiff("followers", "followings")
+
+	fmt.Println(diff)
 
 }
