@@ -51,10 +51,26 @@ func (r *MongoDbClient) Ping() {
 	}
 }
 
+func (r MongoDbClient) CreateDocument() {
+	ctx := context.Background()
+
+	doc := bson.D{
+		{"followers", ""},
+		{"followings", ""},
+		{"diff", ""},
+	}
+
+	_, err := r.Client.Database("insta").Collection("followers").InsertOne(ctx, doc)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 func (r *MongoDbClient) Update(collection string, fieldName string, data []string) {
 	ctx := context.Background()
 
-	id, _ := primitive.ObjectIDFromHex("630f581c4b2204c4e04f523b")
+	id, _ := primitive.ObjectIDFromHex("631823a4b1c1589f9c9dc3b3")
 	filter := bson.M{"_id": id}
 	update := bson.M{"$set": bson.M{fieldName: data}}
 
@@ -63,17 +79,12 @@ func (r *MongoDbClient) Update(collection string, fieldName string, data []strin
 	if err != nil {
 		panic(err)
 	}
-
-	//fmt.Println(result)
-	//
-	//result2 := r.Client.Database("insta").Collection("followers").FindOne(ctx, filter)
-	//fmt.Println(result2.DecodeBytes())
 }
 
-func (r *MongoDbClient) GetDiff(field1 string, field2 string) bson.RawValue {
+func (r *MongoDbClient) GetDiff(field1 string, field2 string) {
 	ctx := context.Background()
 
-	id, _ := primitive.ObjectIDFromHex("630f581c4b2204c4e04f523b")
+	id, _ := primitive.ObjectIDFromHex("631823a4b1c1589f9c9dc3b3")
 
 	match := bson.A{
 		bson.M{
@@ -85,26 +96,31 @@ func (r *MongoDbClient) GetDiff(field1 string, field2 string) bson.RawValue {
 		},
 		bson.M{
 			"$project": bson.M{
-				"result": bson.M{
+				"followings": "$followings",
+				"followers":  "$followers",
+				"diff": bson.M{
 					"$setDifference": bson.A{
 						"$followings", "$followers",
 					},
 				},
 			},
 		},
+		bson.M{
+			"$merge": bson.M{
+				"into": bson.M{
+					"db":   "insta",
+					"coll": "followers",
+				},
+				"on":             "_id",
+				"whenMatched":    "replace",
+				"whenNotMatched": "insert",
+			},
+		},
 	}
 
-	cur, err := r.Client.Database("insta").Collection("followers").Aggregate(ctx, match)
+	_, err := r.Client.Database("insta").Collection("followers").Aggregate(ctx, match)
 
 	if err != nil {
 		panic(err)
 	}
-
-	var data []bson.Raw
-
-	if err = cur.All(context.Background(), &data); err != nil {
-		panic(err)
-	}
-
-	return data[0].Lookup("result")
 }
