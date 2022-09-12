@@ -67,6 +67,22 @@ func (r MongoDbClient) CreateDocument() {
 	}
 }
 
+func (r *MongoDbClient) GetLastDiff() bson.RawValue {
+	ctx := context.Background()
+
+	id, _ := primitive.ObjectIDFromHex("631823a4b1c1589f9c9dc3b3")
+	opts := options.FindOne().SetProjection(bson.D{{"diff", 1}})
+	result := r.Client.Database(r.Database).Collection("followers").FindOne(ctx, bson.D{{"_id", id}}, opts)
+
+	raw, err := result.DecodeBytes()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return raw.Lookup("diff")
+}
+
 func (r *MongoDbClient) Update(collection string, fieldName string, data []string) {
 	ctx := context.Background()
 
