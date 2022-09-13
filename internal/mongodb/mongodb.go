@@ -67,7 +67,7 @@ func (r MongoDbClient) CreateDocument() {
 	}
 }
 
-func (r *MongoDbClient) GetLastDiff() bson.RawValue {
+func (r *MongoDbClient) GetUnfollowers() bson.RawValue {
 	ctx := context.Background()
 
 	id, _ := primitive.ObjectIDFromHex("631823a4b1c1589f9c9dc3b3")
@@ -97,7 +97,7 @@ func (r *MongoDbClient) Update(collection string, fieldName string, data []strin
 	}
 }
 
-func (r *MongoDbClient) GetDiff(field1 string, field2 string) {
+func (r *MongoDbClient) UpdateUnfollowers(field1 string, field2 string) {
 	ctx := context.Background()
 
 	id, _ := primitive.ObjectIDFromHex("631823a4b1c1589f9c9dc3b3")
@@ -139,4 +139,30 @@ func (r *MongoDbClient) GetDiff(field1 string, field2 string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers bson.RawValue, newUnfollowers bson.RawValue) {
+	ctx := context.Background()
+
+	match := bson.A{
+		bson.M{
+			"$project": bson.M{
+				"diff": bson.M{
+					"$setDifference": bson.A{
+						unfollowers, newUnfollowers,
+					},
+				},
+			},
+		},
+	}
+
+	cur, err := r.Client.Database("insta").Collection("followers").Aggregate(ctx, match)
+
+	fmt.Println(1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(cur.Current.String())
 }
