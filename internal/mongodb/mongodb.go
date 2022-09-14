@@ -67,7 +67,7 @@ func (r MongoDbClient) CreateDocument() {
 	}
 }
 
-func (r *MongoDbClient) GetUnfollowers() bson.RawValue {
+func (r *MongoDbClient) GetUnfollowers() []string {
 	ctx := context.Background()
 
 	id, _ := primitive.ObjectIDFromHex("631823a4b1c1589f9c9dc3b3")
@@ -80,7 +80,15 @@ func (r *MongoDbClient) GetUnfollowers() bson.RawValue {
 		panic(err)
 	}
 
-	return raw.Lookup("diff")
+	var users []string
+
+	values, _ := raw.Lookup("diff").Array().Values()
+
+	for _, user := range values {
+		users = append(users, user.String())
+	}
+
+	return users
 }
 
 func (r *MongoDbClient) Update(collection string, fieldName string, data []string) {
@@ -141,7 +149,7 @@ func (r *MongoDbClient) UpdateUnfollowers(field1 string, field2 string) {
 	}
 }
 
-func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers bson.RawValue, newUnfollowers bson.RawValue) {
+func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers []string, newUnfollowers []string) {
 	ctx := context.Background()
 
 	match := bson.A{
