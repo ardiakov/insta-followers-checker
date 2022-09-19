@@ -166,11 +166,23 @@ func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers []string, newUnfollow
 
 	cur, err := r.Client.Database("insta").Collection("followers").Aggregate(ctx, match)
 
-	fmt.Println(1)
-
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(cur.Current.String())
+	for cur.Next(ctx) {
+		data, _ := cur.Current.Lookup("diff").Array().Values()
+
+		for _, user := range data {
+			fmt.Println(user.String())
+		}
+	}
+
+	/*var results []bson.M
+
+	if err = cur.All(ctx, &results); err != nil {
+		panic(err)
+	}
+
+	fmt.Println(results[0])*/
 }

@@ -25,7 +25,7 @@ func main() {
 	context.MongoDbClient.UpdateUnfollowers("followers", "followings")
 	newUnfollowers := context.MongoDbClient.GetUnfollowers()*/
 
-	data := []string{"test", "test"}
+	data := []string{"alex_veselova", "ragulina"}
 
 	context.MongoDbClient.DiffBetweenUnfollowers(unfollowers, data)
 
