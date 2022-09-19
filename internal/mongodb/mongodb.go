@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"strconv"
 )
 
 type MongoDbClient struct {
@@ -149,7 +150,7 @@ func (r *MongoDbClient) UpdateUnfollowers(field1 string, field2 string) {
 	}
 }
 
-func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers []string, newUnfollowers []string) {
+func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers []string, newUnfollowers []string) []string {
 	ctx := context.Background()
 
 	match := bson.A{
@@ -170,19 +171,17 @@ func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers []string, newUnfollow
 		panic(err)
 	}
 
+	var users []string
+
 	for cur.Next(ctx) {
 		data, _ := cur.Current.Lookup("diff").Array().Values()
 
 		for _, user := range data {
-			fmt.Println(user.String())
+			str, _ := strconv.Unquote(user.String())
+
+			users = append(users, str)
 		}
 	}
 
-	/*var results []bson.M
-
-	if err = cur.All(ctx, &results); err != nil {
-		panic(err)
-	}
-
-	fmt.Println(results[0])*/
+	return users
 }
