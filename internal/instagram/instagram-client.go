@@ -2,10 +2,10 @@ package instagram
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 type InstagramClient struct {
@@ -60,7 +60,8 @@ type FollowingResponse struct {
 }
 
 func (r *InstagramClient) GetFollowers() []string {
-	//counter := 0
+	fmt.Println("Получаем список подписчиков")
+
 	maxId := ""
 
 	var users []string
@@ -122,6 +123,8 @@ func (r *InstagramClient) GetFollowers() []string {
 	return users
 }
 func (r *InstagramClient) GetFollowings() []string {
+	fmt.Println("Получаем список подписок")
+
 	counter := 0
 	maxId := ""
 
@@ -136,8 +139,8 @@ func (r *InstagramClient) GetFollowings() []string {
 		}
 
 		req, err := http.NewRequest("GET", r.Endpoint+r.followingEndpoint+"?", nil)
-		req.Header.Set("cookie", os.Getenv("COOKIE"))
-		req.Header.Set("x-ig-app-id", os.Getenv("APP_ID"))
+		req.Header.Set("cookie", r.instagramCookies)
+		req.Header.Set("x-ig-app-id", r.instagramAppId)
 
 		req.URL.RawQuery = parm.Encode()
 

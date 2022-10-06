@@ -69,6 +69,8 @@ func (r MongoDbClient) CreateDocument() {
 }
 
 func (r *MongoDbClient) GetUnfollowers() []string {
+	fmt.Println("Получаем последний сохраненный список отписавшихся")
+
 	ctx := context.Background()
 
 	id, _ := primitive.ObjectIDFromHex("631823a4b1c1589f9c9dc3b3")
@@ -82,6 +84,10 @@ func (r *MongoDbClient) GetUnfollowers() []string {
 	}
 
 	var users []string
+
+	if raw.Lookup("diff").String() == "null" {
+		return users
+	}
 
 	values, _ := raw.Lookup("diff").Array().Values()
 
@@ -174,6 +180,10 @@ func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers []string, newUnfollow
 	var users []string
 
 	for cur.Next(ctx) {
+		if "null" == cur.Current.Lookup("diff").String() {
+			return users
+		}
+
 		data, _ := cur.Current.Lookup("diff").Array().Values()
 
 		for _, user := range data {
