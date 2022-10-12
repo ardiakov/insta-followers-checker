@@ -53,6 +53,8 @@ func main() {
 
 	diffUsers := context.MongoDbClient.DiffBetweenUnfollowers(unfollowers, newUnfollowers)
 
+	fmt.Println(diffUsers)
+
 	err = file.SetCellValue(currentSheet, "B1", fmt.Sprintf("Новые отписавшиеся: %d", len(diffUsers)))
 
 	if err != nil {
