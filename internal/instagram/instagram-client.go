@@ -39,7 +39,7 @@ func InitClient(
 
 type FollowersResponse struct {
 	Users []struct {
-		Pk       int    `json:"pk"`
+		Pk       string `json:"pk"`
 		Username string `json:"username"`
 		FullName string `json:"full_name"`
 	} `json:"users"`
