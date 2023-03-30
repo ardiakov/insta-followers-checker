@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/xuri/excelize/v2"
 	"insta-follower-notifier/internal/app"
-	"log"
 	"time"
 )
 
@@ -31,45 +29,45 @@ func main() {
 	context.MongoDbClient.UpdateUnfollowers("followers", "followings")
 	newUnfollowers := context.MongoDbClient.GetUnfollowers()
 
-	currentSheet := time.Now().Format("2006-01-02")
-
-	file := excelize.NewFile()
-	file.NewSheet(currentSheet)
-	file.DeleteSheet("Sheet1")
-
-	err := file.SetCellValue(currentSheet, "A1", fmt.Sprintf("Отписавшиеся: %d", len(newUnfollowers)))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for i, unfollower := range newUnfollowers {
-		err = file.SetCellValue(currentSheet, fmt.Sprintf("A%d", i+2), unfollower)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	//currentSheet := time.Now().Format("2006-01-02")
+	//
+	//file := excelize.NewFile()
+	//file.NewSheet(currentSheet)
+	//file.DeleteSheet("Sheet1")
+	//
+	//err := file.SetCellValue(currentSheet, "A1", fmt.Sprintf("Отписавшиеся: %d", len(newUnfollowers)))
+	//
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//for i, unfollower := range newUnfollowers {
+	//	err = file.SetCellValue(currentSheet, fmt.Sprintf("A%d", i+2), unfollower)
+	//
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
 
 	diffUsers := context.MongoDbClient.DiffBetweenUnfollowers(unfollowers, newUnfollowers)
 
 	fmt.Println(diffUsers)
 
-	err = file.SetCellValue(currentSheet, "B1", fmt.Sprintf("Новые отписавшиеся: %d", len(diffUsers)))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for i, newDiffUser := range diffUsers {
-		err = file.SetCellValue(currentSheet, fmt.Sprintf("B%d", i+2), newDiffUser)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if err = file.SaveAs("result.xlsx"); err != nil {
-		log.Fatal(err)
-	}
+	//err = file.SetCellValue(currentSheet, "B1", fmt.Sprintf("Новые отписавшиеся: %d", len(diffUsers)))
+	//
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//for i, newDiffUser := range diffUsers {
+	//	err = file.SetCellValue(currentSheet, fmt.Sprintf("B%d", i+2), newDiffUser)
+	//
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
+	//
+	//if err = file.SaveAs("result.xlsx"); err != nil {
+	//	log.Fatal(err)
+	//}
 }

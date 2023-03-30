@@ -157,6 +157,10 @@ func (r *MongoDbClient) UpdateUnfollowers(field1 string, field2 string) {
 }
 
 func (r *MongoDbClient) DiffBetweenUnfollowers(unfollowers []string, newUnfollowers []string) []string {
+
+	fmt.Println(unfollowers)
+	fmt.Println(newUnfollowers)
+
 	ctx := context.Background()
 
 	match := bson.A{
